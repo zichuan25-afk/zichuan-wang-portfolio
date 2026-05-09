@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Noto+Serif+SC:wght@300;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Noto Serif SC", serif;
+  
+  --color-accent: #C80000;
+  --color-bg-dark: #050505;
+  --color-film-grey: #121212;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-dark text-white font-sans overflow-hidden;
+    background-image: radial-gradient(circle at 50% 50%, #0d0d0d 0%, #050505 100%);
+  }
+
+  /* Grain Effect Overlay */
+  .noise-overlay {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    bottom: -50%;
+    width: 200%;
+    height: 200%;
+    background: transparent url('http://assets.iceable.com/img/noise-transparent.png') repeat;
+    background-size: 150px 150px;
+    opacity: .05;
+    pointer-events: none;
+    z-index: 9999;
+    animation: noise 1s steps(4) infinite;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .perspective-1500 {
+    perspective: 1500px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
+
+@keyframes noise {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(-1%, -1%); }
+  20% { transform: translate(-2%, 1%); }
+  30% { transform: translate(1%, -2%); }
+  40% { transform: translate(-1%, 2%); }
+  50% { transform: translate(-2%, 1%); }
+  60% { transform: translate(2%, 0); }
+  70% { transform: translate(0, 2%); }
+  80% { transform: translate(-2%, 0); }
+  90% { transform: translate(1%, 1%); }
+  100% { transform: translate(1%, 0); }
+}
+
+@layer components {
+  .serif-title {
+    @apply font-serif italic tracking-tight leading-none;
+  }
+  
+  .sans-meta {
+    @apply font-sans font-light uppercase tracking-[0.3em] text-[10px];
+  }
+}
+
+/* Custom Scrollbar for Details */
+::-webkit-scrollbar {
+  width: 2px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-accent;
+}
