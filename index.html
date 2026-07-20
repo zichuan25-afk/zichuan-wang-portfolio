@@ -1,826 +1,106 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>汪子川 | 舞台设计作品集</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --bg: #e8e6e2;
-            --bg-warm: #f2f0ec;
-            --text: #1c1c1c;
-            --text-muted: #777;
-            --text-light: #aaa;
-        }
-
-        html, body {
-            font-family: 'Georgia', 'Noto Serif SC', serif;
-            background: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ========== LOADING ========== */
-        .loading {
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 1s ease;
-        }
-        .loading.done { opacity: 0; pointer-events: none; }
-        .loading-text {
-            font-size: 10px;
-            letter-spacing: 0.8em;
-            color: var(--text-light);
-            font-family: sans-serif;
-            animation: breathe 2.5s ease-in-out infinite;
-        }
-        @keyframes breathe { 0%,100%{opacity:0.2} 50%{opacity:0.7} }
-
-        /* ========== HEADER ========== */
-        .site-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            padding: 24px 36px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            pointer-events: none;
-        }
-        .site-header > * { pointer-events: auto; }
-
-        .logo {
-            font-size: 10px;
-            letter-spacing: 0.5em;
-            font-family: sans-serif;
-            color: var(--text-muted);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        .logo:hover { color: var(--text); }
-
-        .header-nav {
-            display: flex;
-            gap: 4px;
-            background: rgba(255,255,255,0.5);
-            backdrop-filter: blur(16px);
-            padding: 4px;
-            border-radius: 100px;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        .header-nav-btn {
-            padding: 8px 20px;
-            border-radius: 100px;
-            border: none;
-            background: transparent;
-            font-size: 10px;
-            letter-spacing: 0.12em;
-            font-family: sans-serif;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
-            white-space: nowrap;
-        }
-        .header-nav-btn:hover { color: var(--text); }
-        .header-nav-btn.active {
-            background: var(--text);
-            color: #fff;
-        }
-
-        .header-contact {
-            font-size: 10px;
-            letter-spacing: 0.3em;
-            font-family: sans-serif;
-            color: var(--text-light);
-            background: none;
-            border: none;
-            cursor: pointer;
-            transition: color 0.3s;
-            padding-bottom: 2px;
-            position: relative;
-        }
-        .header-contact::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: var(--text-muted);
-            transition: width 0.4s cubic-bezier(0.16,1,0.3,1);
-        }
-        .header-contact:hover { color: var(--text); }
-        .header-contact:hover::after { width: 100%; }
-
-        /* ========== 3D SCENE ========== */
-        .scene-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 100px 40px 60px;
-            perspective: 2000px;
-            perspective-origin: 50% 45%;
-        }
-
-        .scene {
-            position: relative;
-            width: 100%;
-            max-width: 1200px;
-            height: 680px;
-            transform-style: preserve-3d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* ========== 3D CARD ========== */
-        .scene-card {
-            position: absolute;
-            width: 340px;
-            height: 440px;
-            transform-style: preserve-3d;
-            cursor: pointer;
-            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-            will-change: transform;
-        }
-
-        .card-surface {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #fff;
-            box-shadow:
-                0 4px 20px rgba(0,0,0,0.08),
-                0 1px 3px rgba(0,0,0,0.05);
-            transition: box-shadow 0.6s ease;
-        }
-
-        .scene-card:hover .card-surface {
-            box-shadow:
-                0 40px 80px -20px rgba(0,0,0,0.25),
-                0 20px 40px -10px rgba(0,0,0,0.15),
-                0 0 0 1px rgba(0,0,0,0.04);
-        }
-
-        .card-image {
-            width: 100%;
-            height: 75%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.8s cubic-bezier(0.16,1,0.3,1), filter 0.5s ease;
-            filter: saturate(0.85) contrast(0.95);
-        }
-
-        .scene-card:hover .card-image {
-            transform: scale(1.05);
-            filter: saturate(1) contrast(1);
-        }
-
-        /* Card text area */
-        .card-text {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 16px 20px 18px;
-            background: linear-gradient(to top, rgba(255,255,255,1) 70%, rgba(255,255,255,0.9) 100%);
-            z-index: 2;
-        }
-
-        .card-title-zh {
-            font-size: 15px;
-            font-weight: bold;
-            color: var(--text);
-            line-height: 1.3;
-            margin-bottom: 3px;
-        }
-
-        .card-title-en {
-            font-size: 9px;
-            font-family: sans-serif;
-            letter-spacing: 0.08em;
-            color: var(--text-light);
-            text-transform: uppercase;
-            line-height: 1.4;
-        }
-
-        .card-year {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            font-size: 9px;
-            font-family: sans-serif;
-            letter-spacing: 0.1em;
-            color: #fff;
-            background: rgba(0,0,0,0.35);
-            padding: 4px 10px;
-            border-radius: 100px;
-            backdrop-filter: blur(8px);
-            z-index: 3;
-        }
-
-        .card-tag {
-            position: absolute;
-            top: 14px;
-            left: 14px;
-            font-size: 8px;
-            font-family: sans-serif;
-            letter-spacing: 0.15em;
-            color: #fff;
-            background: rgba(0,0,0,0.3);
-            padding: 3px 8px;
-            border-radius: 100px;
-            backdrop-filter: blur(8px);
-            z-index: 3;
-            text-transform: uppercase;
-        }
-
-        /* Hover popup effect */
-        .scene-card:hover {
-            z-index: 100 !important;
-        }
-
-        /* ========== DETAIL PAGE ========== */
-        .detail-page {
-            position: fixed;
-            inset: 0;
-            z-index: 5000;
-            background: #0a0a0a;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.7s ease;
-        }
-        .detail-page.active {
-            display: block;
-            opacity: 1;
-        }
-
-        .detail-bg-layer {
-            position: absolute;
-            inset: 0;
-            background-size: cover;
-            background-position: center;
-            opacity: 0;
-            transform: scale(1.08);
-            transition: opacity 1s ease, transform 10s linear;
-        }
-        .detail-bg-layer.active {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .detail-vignette {
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 100%),
-                linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
-            z-index: 2;
-        }
-
-        .detail-back {
-            position: absolute;
-            top: 24px;
-            left: 28px;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 18px;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 100px;
-            color: rgba(255,255,255,0.5);
-            font-size: 10px;
-            letter-spacing: 0.15em;
-            font-family: sans-serif;
-            cursor: pointer;
-            transition: all 0.4s ease;
-        }
-        .detail-back:hover {
-            color: #fff;
-            background: rgba(0,0,0,0.6);
-            border-color: rgba(255,255,255,0.15);
-        }
-        .detail-back svg { width: 14px; height: 14px; }
-
-        .detail-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 50;
-            width: 56px;
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.25);
-            transition: all 0.4s ease;
-            opacity: 0;
-        }
-        .detail-nav:hover { opacity: 1; color: rgba(255,255,255,0.8); }
-        .detail-nav.prev { left: 0; }
-        .detail-nav.next { right: 0; }
-
-        .detail-content {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 30;
-            padding: 48px 52px 40px;
-            color: #fff;
-            pointer-events: none;
-        }
-        .detail-content > * { pointer-events: auto; }
-
-        .detail-tag {
-            display: inline-block;
-            font-size: 9px;
-            letter-spacing: 0.3em;
-            font-family: sans-serif;
-            text-transform: uppercase;
-            padding: 3px 12px;
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 100px;
-            margin-bottom: 10px;
-            color: rgba(255,255,255,0.45);
-        }
-
-        .detail-title-zh {
-            font-size: clamp(36px, 5vw, 64px);
-            font-weight: bold;
-            line-height: 1.05;
-            margin-bottom: 4px;
-            text-shadow: 0 4px 24px rgba(0,0,0,0.4);
-        }
-
-        .detail-title-en {
-            font-size: 11px;
-            font-family: sans-serif;
-            letter-spacing: 0.15em;
-            color: rgba(255,255,255,0.35);
-            text-transform: uppercase;
-            margin-bottom: 16px;
-        }
-
-        .detail-meta {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 16px;
-            font-size: 10px;
-            letter-spacing: 0.3em;
-            font-family: sans-serif;
-            color: rgba(255,255,255,0.4);
-            text-transform: uppercase;
-        }
-        .detail-meta .divider { width: 14px; height: 1px; background: rgba(255,255,255,0.1); }
-
-        .detail-desc {
-            font-size: 13px;
-            line-height: 1.7;
-            color: rgba(255,255,255,0.55);
-            font-weight: 300;
-            font-style: italic;
-            max-width: 480px;
-            margin-bottom: 24px;
-        }
-
-        .detail-thumbs {
-            display: flex;
-            gap: 8px;
-        }
-        .detail-thumb {
-            width: 52px;
-            height: 38px;
-            border-radius: 4px;
-            background-size: cover;
-            background-position: center;
-            cursor: pointer;
-            opacity: 0.35;
-            transition: all 0.4s ease;
-            border: 1.5px solid transparent;
-        }
-        .detail-thumb:hover { opacity: 0.7; }
-        .detail-thumb.active {
-            opacity: 1;
-            border-color: rgba(255,255,255,0.4);
-            transform: scale(1.1);
-        }
-
-        .detail-counter {
-            margin-left: auto;
-            font-size: 11px;
-            font-family: sans-serif;
-            color: rgba(255,255,255,0.35);
-            letter-spacing: 0.1em;
-            align-self: center;
-        }
-        .detail-counter .cur { color: rgba(255,255,255,0.8); font-weight: 500; }
-
-        /* ========== CONTACT ========== */
-        .contact-page {
-            position: fixed;
-            inset: 0;
-            z-index: 6000;
-            background: var(--bg);
-            display: none;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            align-items: center;
-            justify-content: center;
-        }
-        .contact-page.active { display: flex; opacity: 1; }
-
-        .contact-close {
-            position: absolute;
-            top: 24px;
-            right: 36px;
-            background: none;
-            border: none;
-            font-size: 10px;
-            letter-spacing: 0.3em;
-            font-family: sans-serif;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-        .contact-close:hover { color: var(--text); }
-
-        .contact-box {
-            text-align: center;
-        }
-        .contact-box h2 {
-            font-size: clamp(32px, 4vw, 48px);
-            font-style: italic;
-            margin-bottom: 64px;
-            color: var(--text);
-        }
-        .contact-row { margin-bottom: 40px; }
-        .contact-row-label {
-            font-size: 9px;
-            letter-spacing: 0.4em;
-            color: var(--text-light);
-            font-family: sans-serif;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-        .contact-row-value {
-            font-size: clamp(18px, 2.5vw, 24px);
-            color: var(--text);
-            letter-spacing: 0.1em;
-            cursor: pointer;
-            transition: opacity 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .contact-row-value:hover { opacity: 0.5; }
-        .contact-sep {
-            width: 36px;
-            height: 1px;
-            background: rgba(0,0,0,0.1);
-            margin: 28px auto;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: rgba(0,0,0,0.8);
-            color: #fff;
-            padding: 12px 28px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-family: sans-serif;
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
-            pointer-events: none;
-            z-index: 10000;
-        }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-        /* Mobile */
-        @media (max-width: 900px) {
-            .scene { height: 500px; }
-            .scene-card { width: 240px; height: 320px; }
-            .site-header { padding: 16px 20px; }
-            .header-nav { gap: 2px; }
-            .header-nav-btn { padding: 6px 12px; font-size: 9px; }
-            .detail-content { padding: 24px; }
-            .detail-nav { display: none; }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="loading" id="loading">
-        <div class="loading-text">LOADING</div>
-    </div>
-    <div class="toast" id="toast">已复制到剪贴板</div>
-
-    <!-- ===== GALLERY ===== -->
-    <div id="galleryView">
-        <header class="site-header">
-            <a class="logo" href="#">ZICHUAN WANG</a>
-            <nav class="header-nav">
-                <button class="header-nav-btn active" id="btn-main" onclick="filterProjects('main')">主要设计</button>
-                <button class="header-nav-btn" id="btn-assistant" onclick="filterProjects('assistant')">助理及案头作业</button>
-            </nav>
-            <button class="header-contact" onclick="showContact()">CONTACT</button>
-        </header>
-
-        <div class="scene-container">
-            <div class="scene" id="scene"></div>
-        </div>
-    </div>
-
-    <!-- ===== DETAIL ===== -->
-    <div class="detail-page" id="detailPage">
-        <div id="detailBgs"></div>
-        <div class="detail-vignette"></div>
-
-        <button class="detail-back" onclick="closeDetail()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-            返回
-        </button>
-
-        <button class="detail-nav prev" onclick="detailPrevImg()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-        </button>
-        <button class="detail-nav next" onclick="detailNextImg()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-        </button>
-
-        <div class="detail-content">
-            <div class="detail-tag" id="dTag">主要设计</div>
-            <div class="detail-title-zh" id="dTitleZh">缘·白蛇</div>
-            <div class="detail-title-en" id="dTitleEn">WHITE SNAKE</div>
-            <div class="detail-meta">
-                <span id="dLoc">中央戏剧学院剧场</span>
-                <span class="divider"></span>
-                <span id="dYear">2025</span>
-            </div>
-            <p class="detail-desc" id="dDesc">...</p>
-            <div style="display:flex;align-items:center;gap:16px;">
-                <div class="detail-thumbs" id="dThumbs"></div>
-                <div class="detail-counter">
-                    <span class="cur" id="dCur">1</span> / <span id="dTotal">3</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== CONTACT ===== -->
-    <div class="contact-page" id="contactPage">
-        <button class="contact-close" onclick="hideContact()">CLOSE</button>
-        <div class="contact-box">
-            <h2>Collaboration.</h2>
-            <div class="contact-row">
-                <div class="contact-row-label">WeChat ID (Click to Copy)</div>
-                <div class="contact-row-value" onclick="copyWechat()">wzc20010318</div>
-            </div>
-            <div class="contact-sep"></div>
-            <div class="contact-row">
-                <div class="contact-row-label">E-Mail Address</div>
-                <a href="mailto:zichuan25@gmail.com" class="contact-row-value">zichuan25@gmail.com</a>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ===== DATA =====
-        const mainProjects = [
-            { id:"白蛇", title:"缘·白蛇", titleEn:"WHITE SNAKE", year:"2025", location:"中央戏剧学院剧场", tag:"主要设计", desc:"为音乐剧《缘·白蛇》设计的舞台。以'极致留白'与'枯枝'为核心，重构传统白蛇传。利用极简的视觉语言，在古典韵味中寻找当代东方美学的呼吸感。", images:["images/2.jpg","images/3.jpg","images/4.jpg"] },
-            { id:"琴弦", title:"命若琴弦", titleEn:"FATE LIKE A STRING", year:"2025", location:"实验剧场 / 史铁生原作", tag:"主要设计", desc:"探讨生命的虚无与坚韧。提取粗犷的岩石肌理，通过倾斜的步道与压抑的层高，将史铁生笔下苍凉而壮阔的生命哲思具象化。", images:["images/5.jpg","images/6.jpg","images/7.jpg"] },
-            { id:"无影25", title:"无影 2025", titleEn:"NO SHADOW 2025", year:"2025", location:"溶洞实景演出", tag:"主要设计", desc:"实景舞美实践。利用天然溶洞地貌，构建出一种'人工造景'与'自然进化'的跨时空对话，探索环境戏剧在极致条件下的可能性。", images:["images/8.jpg","images/9.jpg"] },
-            { id:"无影26", title:"无影 2026 桂林艺术节版", titleEn:"NO SHADOW 2026 GUILIN", year:"2026", location:"桂林艺术节 / 溶洞实景", tag:"主要设计", desc:"《无影》桂林艺术节特别版本。在原有实景基础上重新编排视觉节奏，融入更多在地文化元素，呈现更具当代性的环境戏剧表达。", images:["images/10.jpg","images/11.jpg"] },
-            { id:"梅边", title:"梅边梦柳", titleEn:"DREAMING OF WILLOW", year:"2025", location:"实验剧场", tag:"主要设计", desc:"以古典戏曲意象为灵感，构建一个介于真实与虚幻之间的诗意空间。梅与柳的交织，象征着记忆与梦境的缠绵。", images:["images/12.jpg"] },
-            { id:"悟空", title:"悟空", titleEn:"WUKONG", year:"2025", location:"神话新编剧场", tag:"主要设计", desc:"以当代视角重构孙悟空神话。舞台以极具张力的视觉符号，表现悟空从顽石到斗战胜佛的精神蜕变。", images:["images/13.jpg"] },
-            { id:"即刻", title:"即刻感受", titleEn:"FEEL IT NOW", year:"2024", location:"当代舞蹈剧场", tag:"主要设计", desc:"以身体感知为核心的当代舞台实验。通过光影与几何结构的交织，营造沉浸式的感官体验空间。", images:["images/16.jpg"] },
-            { id:"笨狼", title:"笨狼的故事", titleEn:"THE TALE OF THE SILLY WOLF", year:"2023", location:"儿童剧系列", tag:"主要设计", desc:"为儿童剧系列打造的奇幻舞台世界。以温暖的色调与夸张的比例，构建一个充满想象力与童趣的叙事空间。", images:["images/17.jpg","images/18.jpg"] },
-            { id:"温柔", title:"温柔的体贴的", titleEn:"GENTLE AND CONSIDERATE", year:"2025", location:"绘本改编儿童剧", tag:"主要设计", desc:"绘本改编儿童剧舞台设计。以橙色山丘与云朵装饰营造童话氛围，温暖而充满想象力的视觉语言。", images:["images/22.jpg"] },
-            { id:"信任", title:"信任的力量", titleEn:"THE POWER OF TRUST", year:"2025", location:"儿童剧", tag:"主要设计", desc:"以蓝色灯光与抽象几何布景构建的现代舞台。探讨信任与成长的故事，温暖而富有启发性。", images:["images/23.jpg"] },
-            { id:"教师", title:"教师节晚会", titleEn:"TEACHER'S DAY GALA", year:"2024", location:"校园庆典活动", tag:"主要设计", desc:"教师节庆祝活动舞台设计。以庄重而温馨的视觉语言，营造感恩与敬意的庆典氛围。", images:["images/24.jpg"] }
-        ];
-
-        const assistantProjects = [
-            { id:"40天", title:"40天", titleEn:"40 DAYS", year:"2024", location:"设计助理", tag:"助理工作", desc:"担任设计助理参与的舞台项目。在团队协作中学习大型演出的舞美制作流程。", images:["images/14.jpg"] },
-            { id:"潮汐", title:"潮汐图", titleEn:"TIDE CHART", year:"2024", location:"设计助理", tag:"助理工作", desc:"担任设计助理。参与海洋意象舞台的视觉呈现，探索水流与空间的动态关系。", images:["images/15.jpg"] },
-            { id:"戈多", title:"等待戈多", titleEn:"WAITING FOR GODOT", year:"2024", location:"设计助理 / 贝克特经典", tag:"助理工作", desc:"作为设计助理参与的《等待戈多》舞台设计。在荒诞与虚无的基调中，协助构建时间的停滞感。", images:["images/19.jpg","images/20.jpg"] },
-            { id:"原野", title:"原野", titleEn:"WILDERNESS", year:"2024", location:"设计助理 / 曹禺原作", tag:"助理工作", desc:"担任设计助理参与的《原野》舞台设计。协助营造压抑而悲壮的乡土戏剧空间。", images:["images/28.jpg","images/29.jpg"] },
-            { id:"折子", title:"折子戏", titleEn:"EXCERPTS", year:"2024", location:"设计助理", tag:"助理工作", desc:"担任设计助理参与的折子戏系列演出。在传统戏曲舞台上协助当代视觉语言的融入。", images:["images/30.jpg"] }
-        ];
-
-        const deskProjects = [
-            { id:"李尔", title:"李尔王", titleEn:"KING LEAR", year:"2024", location:"案头作业 / 莎剧练习", tag:"案头作业", desc:"权力的崩塌与荒野的咆哮。通过对'暴风雨'后废墟质感的提取，表现李尔王在疯癫与觉醒之间的混沌精神状态。", images:["images/31.jpg","images/32.jpg","images/36.jpg"] },
-            { id:"天宫", title:"闹天宫", titleEn:"HAVOC IN HEAVEN", year:"2024", location:"案头作业 / 京剧", tag:"案头作业", desc:"京剧《闹天宫》舞台设计练习。提取传统戏曲的视觉符号，探索神话场面的当代舞台表达。", images:["images/33.jpg"] },
-            { id:"天边", title:"天边外", titleEn:"BEYOND THE HORIZON", year:"2024", location:"案头作业 / 尤金·奥尼尔", tag:"案头作业", desc:"尤金·奥尼尔经典剧作舞台设计练习。以诗意的空间语言，呈现理想与现实之间的永恒张力。", images:["images/34.jpg"] },
-            { id:"祥子", title:"骆驼祥子", titleEn:"RICKSHAW BOY", year:"2024", location:"案头作业 / 环境式戏剧", tag:"案头作业", desc:"环境式戏剧《骆驼祥子》设计练习。打破传统镜框舞台限制，以沉浸式空间重构老舍笔下的北平。", images:["images/35.jpg"] }
-        ];
-
-        let currentFilter = 'main';
-        let detailProject = null;
-        let detailImgIdx = 0;
-
-        function getProjects() {
-            if (currentFilter === 'main') return mainProjects;
-            return [...assistantProjects, ...deskProjects];
-        }
-
-        // ===== RENDER 3D SCENE =====
-        function renderScene() {
-            const scene = document.getElementById('scene');
-            scene.innerHTML = '';
-            const projects = getProjects();
-
-            // Calculate arc arrangement
-            const count = projects.length;
-            const arcSpan = Math.min(count * 18, 140); // degrees
-            const startAngle = -arcSpan / 2;
-
-            projects.forEach((proj, i) => {
-                const card = document.createElement('div');
-                card.className = 'scene-card';
-
-                // Arc position
-                const angle = startAngle + (i / (count - 1 || 1)) * arcSpan;
-                const radius = 280;
-                const rad = angle * Math.PI / 180;
-                const x = Math.sin(rad) * radius;
-                const z = Math.cos(rad) * radius - radius;
-                const rotY = -angle * 0.6;
-                const rotX = 5 + Math.sin(i * 0.7) * 3;
-
-                card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${rotY}deg) rotateX(${rotX}deg)`;
-                card.style.zIndex = Math.round(z + 500);
-
-                card.innerHTML = `
-                    <div class="card-surface">
-                        <div class="card-tag">${proj.tag}</div>
-                        <div class="card-year">${proj.year}</div>
-                        <img class="card-image" src="${proj.images[0]}" alt="${proj.title}" loading="lazy">
-                        <div class="card-text">
-                            <div class="card-title-zh">${proj.title}</div>
-                            <div class="card-title-en">${proj.titleEn}</div>
-                        </div>
-                    </div>
-                `;
-
-                // Hover: pop forward and straighten
-                card.addEventListener('mouseenter', () => {
-                    card.style.transform = `translateX(${x}px) translateZ(${z + 120}px) rotateY(0deg) rotateX(0deg) scale(1.08)`;
-                });
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${rotY}deg) rotateX(${rotX}deg)`;
-                });
-                card.addEventListener('click', () => openDetail(proj));
-
-                scene.appendChild(card);
-            });
-        }
-
-        function filterProjects(type) {
-            currentFilter = type;
-            document.getElementById('btn-main').classList.toggle('active', type === 'main');
-            document.getElementById('btn-assistant').classList.toggle('active', type === 'assistant');
-            renderScene();
-        }
-
-        // ===== DETAIL =====
-        function openDetail(project) {
-            detailProject = project;
-            detailImgIdx = 0;
-
-            document.getElementById('dTag').textContent = project.tag;
-            document.getElementById('dTitleZh').textContent = project.title;
-            document.getElementById('dTitleEn').textContent = project.titleEn;
-            document.getElementById('dLoc').textContent = project.location;
-            document.getElementById('dYear').textContent = project.year;
-            document.getElementById('dDesc').textContent = project.desc;
-
-            // Backgrounds
-            const bgContainer = document.getElementById('detailBgs');
-            bgContainer.innerHTML = '';
-            project.images.forEach((img, i) => {
-                const div = document.createElement('div');
-                div.className = 'detail-bg-layer' + (i === 0 ? ' active' : '');
-                div.style.backgroundImage = `url(${img})`;
-                div.dataset.index = i;
-                bgContainer.appendChild(div);
-            });
-
-            // Thumbs
-            const thumbs = document.getElementById('dThumbs');
-            thumbs.innerHTML = '';
-            project.images.forEach((img, i) => {
-                const t = document.createElement('div');
-                t.className = 'detail-thumb' + (i === 0 ? ' active' : '');
-                t.style.backgroundImage = `url(${img})`;
-                t.onclick = () => setDetailImg(i);
-                thumbs.appendChild(t);
-            });
-
-            document.getElementById('dTotal').textContent = project.images.length;
-            document.getElementById('dCur').textContent = '1';
-
-            document.getElementById('detailPage').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDetail() {
-            document.getElementById('detailPage').classList.remove('active');
-            document.body.style.overflow = '';
-            detailProject = null;
-        }
-
-        function setDetailImg(idx) {
-            if (!detailProject || idx === detailImgIdx) return;
-            detailImgIdx = idx;
-            document.querySelectorAll('.detail-bg-layer').forEach((el, i) => {
-                el.classList.toggle('active', i === idx);
-            });
-            document.querySelectorAll('.detail-thumb').forEach((el, i) => {
-                el.classList.toggle('active', i === idx);
-            });
-            document.getElementById('dCur').textContent = idx + 1;
-        }
-
-        function detailNextImg() {
-            if (!detailProject) return;
-            setDetailImg((detailImgIdx + 1) % detailProject.images.length);
-        }
-        function detailPrevImg() {
-            if (!detailProject) return;
-            setDetailImg((detailImgIdx - 1 + detailProject.images.length) % detailProject.images.length);
-        }
-
-        // ===== CONTACT =====
-        function showContact() { document.getElementById('contactPage').classList.add('active'); }
-        function hideContact() { document.getElementById('contactPage').classList.remove('active'); }
-
-        function copyWechat() {
-            navigator.clipboard.writeText('wzc20010318').then(() => {
-                const t = document.getElementById('toast');
-                t.classList.add('show');
-                setTimeout(() => t.classList.remove('show'), 2000);
-            });
-        }
-
-        // Keyboard
-        document.addEventListener('keydown', (e) => {
-            if (document.getElementById('detailPage').classList.contains('active')) {
-                if (e.key === 'Escape') closeDetail();
-                if (e.key === 'ArrowRight') detailNextImg();
-                if (e.key === 'ArrowLeft') detailPrevImg();
-            }
-            if (document.getElementById('contactPage').classList.contains('active')) {
-                if (e.key === 'Escape') hideContact();
-            }
-        });
-
-        // Init
-        window.addEventListener('load', () => {
-            renderScene();
-            setTimeout(() => document.getElementById('loading').classList.add('done'), 800);
-        });
-
-        // Mouse parallax on scene
-        document.addEventListener('mousemove', (e) => {
-            const scene = document.getElementById('scene');
-            if (!scene) return;
-            const cx = window.innerWidth / 2;
-            const cy = window.innerHeight / 2;
-            const dx = (e.clientX - cx) / cx;
-            const dy = (e.clientY - cy) / cy;
-            scene.style.transform = `rotateY(${dx * 3}deg) rotateX(${-dy * 2}deg)`;
-        });
-    </script>
-</body>
-</html>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/chunks/14_iu9qtvm8pz.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/00gq-v0e07i1q.js"/><script src="/_next/static/chunks/0pqt~8bl3ukh4.js" async=""></script><script src="/_next/static/chunks/0au83~zq0~0pf.js" async=""></script><script src="/_next/static/chunks/07lhk_q6pmm3r.js" async=""></script><script src="/_next/static/chunks/turbopack-0qzazczm3.h1y.js" async=""></script><script src="/_next/static/chunks/13h-0fd.p-1ga.js" async=""></script><script src="/_next/static/chunks/0d3shmwh5_nmn.js" async=""></script><script src="/_next/static/chunks/0gu_-t1ng171z.js" async=""></script><script src="/_next/static/chunks/02y.sxhs1_il-.js" async=""></script><script src="/_next/static/chunks/0jzcry~vc6reu.js" async=""></script><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/><title>汪子川 | 舞台设计档案 | Zichuan Wang Stage Design Archive</title><meta name="description" content="汪子川 - 舞台设计师作品集档案。中央戏剧学院，专注于音乐剧、话剧、实景演出、儿童剧的舞台设计。"/><meta name="author" content="汪子川 Zichuan Wang"/><meta name="keywords" content="汪子川,舞台设计,作品集,中央戏剧学院,音乐剧,话剧,舞美设计,儿童剧,实景演出,Zichuan Wang,Portfolio,Stage Design,Set Design"/><meta property="og:title" content="汪子川 | 舞台设计档案"/><meta property="og:description" content="中央戏剧学院舞台设计师作品集档案"/><meta property="og:type" content="website"/><meta name="twitter:card" content="summary"/><meta name="twitter:title" content="汪子川 | 舞台设计档案"/><meta name="twitter:description" content="中央戏剧学院舞台设计师作品集档案"/><script src="/_next/static/chunks/03~yq9q893hmn.js" noModule=""></script></head><body class="font-sans text-foreground bg-background min-h-screen"><div hidden=""><!--$--><!--/$--></div><header class="fixed top-0 left-0 right-0 z-50 mix-blend-difference"><div class="flex items-start justify-between p-6 md:p-10"><a class="group flex flex-col gap-0.5" href="/"><span class="font-sans text-[11px] font-medium tracking-widest uppercase text-white">汪子川</span><span class="font-sans text-[9px] tracking-wider uppercase text-white/60 group-hover:text-white/80 transition-colors">Stage Design Archive</span></a><div class="flex items-center gap-6"><nav class="hidden md:flex items-center gap-6"><a class="relative group" href="/"><span class="font-sans text-[10px] tracking-widest uppercase text-white/60 group-hover:text-white transition-colors">ARCHIVE</span><span class="absolute -bottom-1 left-0 w-0 h-px bg-white/40 group-hover:w-full transition-all duration-300"></span></a><a class="relative group" href="/#projects"><span class="font-sans text-[10px] tracking-widest uppercase text-white/60 group-hover:text-white transition-colors">PROJECTS</span><span class="absolute -bottom-1 left-0 w-0 h-px bg-white/40 group-hover:w-full transition-all duration-300"></span></a><a class="relative group" href="/#info"><span class="font-sans text-[10px] tracking-widest uppercase text-white/60 group-hover:text-white transition-colors">INFO</span><span class="absolute -bottom-1 left-0 w-0 h-px bg-white/40 group-hover:w-full transition-all duration-300"></span></a></nav><button class="md:hidden text-white/60 hover:text-white transition-colors" aria-label="Toggle menu"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg></button></div></div></header><main><div class="relative w-full h-screen overflow-hidden bg-background select-none"><div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image:url(&quot;data:image/svg+xml,%3Csvg viewBox=&#x27;0 0 256 256&#x27; xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%3E%3Cfilter id=&#x27;noise&#x27;%3E%3CfeTurbulence type=&#x27;fractalNoise&#x27; baseFrequency=&#x27;0.85&#x27; numOctaves=&#x27;4&#x27; stitchTiles=&#x27;stitch&#x27;/%3E%3C/filter%3E%3Crect width=&#x27;100%25&#x27; height=&#x27;100%25&#x27; filter=&#x27;url(%23noise)&#x27;/%3E%3C/svg%3E&quot;);background-repeat:repeat;background-size:128px 128px"></div><div class="absolute inset-0 flex items-center justify-center" draggable="false" style="perspective:1400px;transform:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:pan-y"><div class="relative" style="width:3000px;height:1200px;transform-style:preserve-3d"><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/white-snake/"><div class="relative cursor-pointer group" style="width:260px;height:360px;transform:translate(-50%, -50%)
+              translateX(-1260px)
+              translateY(-300px)
+              translateZ(-120px)
+              rotateY(-9deg)
+              rotateX(-3deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/3x7L0fgQ/3651.jpg" alt="缘·白蛇" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">01</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:79;opacity:0;transform:translateX(-8.625px) translateY(-5.75px) scale(0.8)"><a href="/project/no-shadow-grand-theatre/"><div class="relative cursor-pointer group" style="width:300px;height:420px;transform:translate(-50%, -50%)
+              translateX(-860.1002005358379px)
+              translateY(-231.8821122761663px)
+              translateZ(30px)
+              rotateY(0deg)
+              rotateX(1.5deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/jdypZNDx/dc7280405048bbf8bf0c607d7fc6ac.jpg" alt="无影（大剧场版）" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">02</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/no-shadow-guilin-festival/"><div class="relative cursor-pointer group" style="width:340px;height:480px;transform:translate(-50%, -50%)
+              translateX(-534.3551996776054px)
+              translateY(-186.86968577706227px)
+              translateZ(-120px)
+              rotateY(9deg)
+              rotateX(-1.5deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/fR8mB806/ff6c374effb426221c54877b8fa134.jpg" alt="无影（桂林艺术节版）" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">03</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:79;opacity:0;transform:translateX(-8.625px) translateY(-5.75px) scale(0.8)"><a href="/project/fate-like-a-string-grand-theatre/"><div class="relative cursor-pointer group" style="width:280px;height:400px;transform:translate(-50%, -50%)
+              translateX(-219.10120470660388px)
+              translateY(-394.83792081670737px)
+              translateZ(30px)
+              rotateY(-3deg)
+              rotateX(3deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/qMcwrcWW/3667.jpg" alt="命若琴弦（大剧场版）" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">04</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/fate-like-a-string-small-theatre/"><div class="relative cursor-pointer group" style="width:320px;height:450px;transform:translate(-50%, -50%)
+              translateX(168.82338007204297px)
+              translateY(-245.62505082802767px)
+              translateZ(-120px)
+              rotateY(6deg)
+              rotateX(0deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/XXS6MKGx/665026ec3d859a8c0c55cf8a23603a.jpg" alt="命若琴弦（小剧场版）" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">05</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:79;opacity:0;transform:translateX(-8.625px) translateY(-5.75px) scale(0.8)"><a href="/project/mei-bian-meng-liu/"><div class="relative cursor-pointer group" style="width:380px;height:520px;transform:translate(-50%, -50%)
+              translateX(577.5199990709896px)
+              translateY(-101.9914856674817px)
+              translateZ(30px)
+              rotateY(-6deg)
+              rotateX(-3deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/6TJxsV2h/fddb7b7b37eb4f0f4c492746a55ef3.jpg" alt="梅边梦柳" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">06</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/wukong/"><div class="relative cursor-pointer group" style="width:290px;height:380px;transform:translate(-50%, -50%)
+              translateX(916.4847394096703px)
+              translateY(-319.58243427338726px)
+              translateZ(-120px)
+              rotateY(3deg)
+              rotateX(1.5deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/ZRGdYXP1/IMG-3533.jpg" alt="悟空" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">07</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:79;opacity:0;transform:translateX(-8.625px) translateY(-5.75px) scale(0.8)"><a href="/project/on-the-mulberry-plateau/"><div class="relative cursor-pointer group" style="width:310px;height:440px;transform:translate(-50%, -50%)
+              translateX(1224.8121696011333px)
+              translateY(-275.96443270583427px)
+              translateZ(30px)
+              rotateY(-9deg)
+              rotateX(-1.5deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/bJHd4YwG/IMG-0139.jpg" alt="在桑树坪上" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">08</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/gentle-and-kind/"><div class="relative cursor-pointer group" style="width:260px;height:360px;transform:translate(-50%, -50%)
+              translateX(-1101.4629167200173px)
+              translateY(60.76560721029365px)
+              translateZ(-120px)
+              rotateY(0deg)
+              rotateX(3deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/mkncyXrj/6a5491e1a34800706cf99d3b06ed70.jpg" alt="温柔的体贴的" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">09</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:79;opacity:0;transform:translateX(-8.625px) translateY(-5.75px) scale(0.8)"><a href="/project/i-trust-you/"><div class="relative cursor-pointer group" style="width:300px;height:420px;transform:translate(-50%, -50%)
+              translateX(-687.8486229379351px)
+              translateY(200.28350467723317px)
+              translateZ(30px)
+              rotateY(9deg)
+              rotateX(0deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/bJjs6SpN/IMG-0137.jpg" alt="我相信你" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">10</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/story-of-the-silly-wolf/"><div class="relative cursor-pointer group" style="width:340px;height:480px;transform:translate(-50%, -50%)
+              translateX(-333.98848639371533px)
+              translateY(352.1926979366246px)
+              translateZ(-120px)
+              rotateY(-3deg)
+              rotateX(-3deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/V6cd7012/IMG-0132.jpg" alt="笨狼的故事" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">11</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:79;opacity:0;transform:translateX(-8.625px) translateY(-5.75px) scale(0.8)"><a href="/project/glass-puppet/"><div class="relative cursor-pointer group" style="width:280px;height:400px;transform:translate(-50%, -50%)
+              translateX(-28.471413694764923px)
+              translateY(150.29419788202253px)
+              translateZ(30px)
+              rotateY(6deg)
+              rotateX(1.5deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/c1YSvPMX/IMG-3556.jpg" alt="玻璃木偶" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">12</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/40-days/"><div class="relative cursor-pointer group" style="width:320px;height:450px;transform:translate(-50%, -50%)
+              translateX(329.96051012913296px)
+              translateY(197.00913218931228px)
+              translateZ(-120px)
+              rotateY(-6deg)
+              rotateX(-1.5deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/WzKgszs2/0bb725873ba790d2110621724cfe92-livephoto.jpg" alt="四十天" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">13</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:79;opacity:0;transform:translateX(-8.625px) translateY(-5.75px) scale(0.8)"><a href="/project/tide-chart/"><div class="relative cursor-pointer group" style="width:380px;height:520px;transform:translate(-50%, -50%)
+              translateX(744.221594788784px)
+              translateY(260.2911187408092px)
+              translateZ(30px)
+              rotateY(3deg)
+              rotateX(3deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/qv09YRKJ/IMG-3512.png" alt="潮汐图" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">14</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/waiting-for-godot/"><div class="relative cursor-pointer group" style="width:290px;height:380px;transform:translate(-50%, -50%)
+              translateX(1113.4662255414423px)
+              translateY(86.96607062943187px)
+              translateZ(-120px)
+              rotateY(-9deg)
+              rotateX(0deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/PxkP6vTX/IMG-0134.jpg" alt="等待戈多" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">15</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:79;opacity:0;transform:translateX(-8.625px) translateY(-5.75px) scale(0.8)"><a href="/project/wilderness/"><div class="relative cursor-pointer group" style="width:310px;height:440px;transform:translate(-50%, -50%)
+              translateX(1420.5130195015797px)
+              translateY(243.015835412204px)
+              translateZ(30px)
+              rotateY(0deg)
+              rotateX(-3deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/DzpH8PMh/IMG-3499.jpg" alt="原野" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">16</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/excerpts/"><div class="relative cursor-pointer group" style="width:260px;height:360px;transform:translate(-50%, -50%)
+              translateX(-1296.223134480265px)
+              translateY(616.9610173348435px)
+              translateZ(-120px)
+              rotateY(9deg)
+              rotateX(1.5deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/N0jZszpM/IMG-3504.jpg" alt="折子戏" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">17</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:79;opacity:0;transform:translateX(-8.625px) translateY(-5.75px) scale(0.8)"><a href="/project/king-lear/"><div class="relative cursor-pointer group" style="width:300px;height:420px;transform:translate(-50%, -50%)
+              translateX(-885.6376658391133px)
+              translateY(671.0175421665841px)
+              translateZ(30px)
+              rotateY(-3deg)
+              rotateX(-1.5deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/nz62F3Ff/3661.jpg" alt="李尔王" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">18</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/don-giovanni/"><div class="relative cursor-pointer group" style="width:340px;height:480px;transform:translate(-50%, -50%)
+              translateX(-501.74496286381986px)
+              translateY(723.776411254294px)
+              translateZ(-120px)
+              rotateY(6deg)
+              rotateX(3deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/qvW2c7F6/zi-chuan-ge-ren-zuo-pin-ji-fu-ben-32.jpg" alt="唐璜" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">19</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:79;opacity:0;transform:translateX(-8.625px) translateY(-5.75px) scale(0.8)"><a href="/project/heavenly-palace/"><div class="relative cursor-pointer group" style="width:280px;height:400px;transform:translate(-50%, -50%)
+              translateX(-188.95022560747185px)
+              translateY(535.4835061899214px)
+              translateZ(30px)
+              rotateY(-6deg)
+              rotateX(0deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/NfJ6MDkq/IMG-0151.jpg" alt="闹天宫" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">20</span></div></div></a></div><div class="absolute" style="left:50%;top:50%;z-index:60;opacity:0;transform:translateX(-3px) translateY(-2px) scale(0.8)"><a href="/project/borkman/"><div class="relative cursor-pointer group" style="width:320px;height:450px;transform:translate(-50%, -50%)
+              translateX(140.4787350362855px)
+              translateY(691.2089503668499px)
+              translateZ(-120px)
+              rotateY(3deg)
+              rotateX(-3deg);transform-style:preserve-3d"><div class="absolute inset-0 acrylic-panel rounded-sm overflow-hidden"><img src="https://i.postimg.cc/nzFrqbnQ/IMG-0145.jpg" alt="约翰·盖布里尔·博克曼" class="absolute inset-0 w-full h-full object-cover" style="opacity:0.85" loading="lazy"/><div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.04) 100%)"></div><div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div></div><div class="absolute top-3 left-3"><span class="text-[9px] tracking-widest text-white/40 font-sans">21</span></div></div></a></div></div></div><div class="absolute bottom-8 left-0 right-0 flex justify-center pointer-events-none" style="opacity:0"><div class="flex flex-col items-center gap-2"><div class="w-px h-8 bg-foreground/10"></div><span class="text-[9px] tracking-[0.3em] uppercase text-muted-foreground font-sans">Drag to Explore</span></div></div><div class="absolute bottom-8 left-8 md:left-10 pointer-events-none" style="opacity:0"><div class="flex flex-col gap-1"><span class="text-[9px] tracking-widest uppercase text-muted-foreground font-sans">21<!-- --> Projects</span><span class="text-[9px] tracking-widest uppercase text-muted-foreground/60 font-sans">2023 — 2027</span></div></div><div class="absolute bottom-8 right-8 md:right-10 flex gap-2 pointer-events-auto flex-wrap justify-end max-w-[60vw]" style="opacity:0"><button class="px-3 py-1.5 text-[9px] tracking-widest uppercase font-sans border rounded-full transition-all duration-300 bg-foreground text-background border-foreground">ALL</button><button class="px-3 py-1.5 text-[9px] tracking-widest uppercase font-sans border rounded-full transition-all duration-300 text-muted-foreground border-border hover:text-foreground hover:border-foreground/20 glass">INDEPENDENT</button><button class="px-3 py-1.5 text-[9px] tracking-widest uppercase font-sans border rounded-full transition-all duration-300 text-muted-foreground border-border hover:text-foreground hover:border-foreground/20 glass">ASSISTANT</button><button class="px-3 py-1.5 text-[9px] tracking-widest uppercase font-sans border rounded-full transition-all duration-300 text-muted-foreground border-border hover:text-foreground hover:border-foreground/20 glass">CONCEPTUAL</button></div></div><section id="info" class="relative min-h-screen bg-background flex items-center justify-center py-32 px-6"><div class="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden"><span class="text-[40vw] font-sans font-bold text-foreground/[0.02] leading-none select-none">川</span></div><div class="max-w-3xl w-full relative z-10"><div style="opacity:0;transform:translateY(40px)"><span class="micro-label block mb-8">Information</span><h2 class="editorial-heading text-4xl md:text-6xl lg:text-7xl mb-12 text-foreground">汪子川</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16"><div class="space-y-8"><div><span class="micro-label block mb-3">Role</span><p class="text-sm leading-relaxed text-foreground/80 font-sans">舞台美术设计师 / Stage Designer</p><p class="text-sm leading-relaxed text-muted-foreground font-sans mt-1">中央戏剧学院</p></div><div><span class="micro-label block mb-3">Period</span><p class="text-sm leading-relaxed text-foreground/80 font-sans">2023 — 2027</p></div><div><span class="micro-label block mb-3">Focus</span><p class="text-sm leading-relaxed text-foreground/80 font-sans">音乐剧、话剧、实景演出、儿童剧</p><p class="text-xs leading-relaxed text-muted-foreground font-sans mt-1">Musical, Drama, Site-Specific, Children&#x27;s Theatre</p></div></div><div class="space-y-8"><div><span class="micro-label block mb-3">Contact</span><div class="space-y-4"><div><button class="group flex flex-col items-start cursor-pointer"><span class="text-xs text-muted-foreground font-sans mb-1">WeChat</span><span class="text-sm text-foreground/80 font-sans group-hover:text-foreground transition-colors">wzc20010318</span></button></div><div><a href="mailto:zichuan25@gmail.com" class="group flex flex-col items-start"><span class="text-xs text-muted-foreground font-sans mb-1">Email</span><span class="text-sm text-foreground/80 font-sans group-hover:text-foreground transition-colors underline decoration-foreground/10 underline-offset-4">zichuan25@gmail.com</span></a></div></div></div></div></div><div class="mt-20 pt-8 border-t border-border"><p class="text-[10px] tracking-wider text-muted-foreground/60 font-sans uppercase">© <!-- -->2026<!-- --> Zichuan Wang. All works reserved.</p></div></div></div></section><!--$--><!--/$--></main><script src="/_next/static/chunks/00gq-v0e07i1q.js" id="_R_" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,"1:\"$Sreact.fragment\"\n2:I[47420,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\"],\"SmoothScroll\"]\n3:I[72776,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\"],\"Navigation\"]\n4:I[39756,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\"],\"default\"]\n5:I[37457,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\"],\"default\"]\n6:I[22016,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\"],\"\"]\n7:I[77212,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\",\"/_next/static/chunks/0jzcry~vc6reu.js\"],\"FloatingPanels\"]\n8:I[94493,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\",\"/_next/static/chunks/0jzcry~vc6reu.js\"],\"ContactSection\"]\n9:I[97367,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\"],\"OutletBoundary\"]\na:\"$Sreact.suspense\"\nc:I[97367,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\"],\"ViewportBoundary\"]\ne:I[97367,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\"],\"MetadataBoundary\"]\n10:I[68027,[\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"/_next/static/chunks/0gu_-t1ng171z.js\",\"/_next/static/chunks/02y.sxhs1_il-.js\"],\"default\",1]\n:HL[\"/_next/static/chunks/14_iu9qtvm8pz.css\",\"style\"]\n"])</script><script>self.__next_f.push([1,"0:{\"P\":null,\"c\":[\"\",\"\"],\"q\":\"\",\"i\":false,\"f\":[[[\"\",{\"children\":[\"__PAGE__\",{}]},\"$undefined\",\"$undefined\",16],[[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/14_iu9qtvm8pz.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/13h-0fd.p-1ga.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-1\",{\"src\":\"/_next/static/chunks/0d3shmwh5_nmn.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-2\",{\"src\":\"/_next/static/chunks/0gu_-t1ng171z.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-3\",{\"src\":\"/_next/static/chunks/02y.sxhs1_il-.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"zh-CN\",\"children\":[[\"$\",\"head\",null,{\"children\":[[\"$\",\"link\",null,{\"rel\":\"preconnect\",\"href\":\"https://fonts.googleapis.com\"}],[\"$\",\"link\",null,{\"rel\":\"preconnect\",\"href\":\"https://fonts.gstatic.com\",\"crossOrigin\":\"anonymous\"}]]}],[\"$\",\"body\",null,{\"className\":\"font-sans text-foreground bg-background min-h-screen\",\"children\":[\"$\",\"$L2\",null,{\"children\":[[\"$\",\"$L3\",null,{}],[\"$\",\"main\",null,{\"children\":[\"$\",\"$L4\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L5\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[\"$\",\"div\",null,{\"className\":\"min-h-screen bg-background flex items-center justify-center px-6\",\"children\":[\"$\",\"div\",null,{\"className\":\"text-center\",\"children\":[[\"$\",\"span\",null,{\"className\":\"micro-label block mb-6\",\"children\":\"Error 404\"}],[\"$\",\"h1\",null,{\"className\":\"editorial-heading text-6xl md:text-8xl mb-4 text-foreground\",\"children\":\"未找到\"}],[\"$\",\"p\",null,{\"className\":\"text-sm text-muted-foreground font-sans mb-10\",\"children\":\"The page you are looking for does not exist.\"}],[\"$\",\"$L6\",null,{\"href\":\"/\",\"className\":\"inline-flex items-center gap-2 px-5 py-2.5 text-[10px] tracking-widest uppercase font-sans border border-border rounded-full text-foreground hover:bg-foreground hover:text-background transition-colors\",\"children\":[[\"$\",\"svg\",null,{\"ref\":\"$undefined\",\"xmlns\":\"http://www.w3.org/2000/svg\",\"width\":12,\"height\":12,\"viewBox\":\"0 0 24 24\",\"fill\":\"none\",\"stroke\":\"currentColor\",\"strokeWidth\":2,\"strokeLinecap\":\"round\",\"strokeLinejoin\":\"round\",\"className\":\"lucide lucide-arrow-left\",\"aria-hidden\":\"true\",\"children\":[[\"$\",\"path\",\"1l729n\",{\"d\":\"m12 19-7-7 7-7\"}],[\"$\",\"path\",\"x3x0zl\",{\"d\":\"M19 12H5\"}],\"$undefined\"]}],\"Return to Archive\"]}]]}]}],[]],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]}]]}]}]]}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"$L7\",null,{}],[\"$\",\"$L8\",null,{}]],[[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/0jzcry~vc6reu.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"$L9\",null,{\"children\":[\"$\",\"$a\",null,{\"name\":\"Next.MetadataOutlet\",\"children\":\"$@b\"}]}]]}],{},null,false,null]},null,false,null],[\"$\",\"$1\",\"h\",{\"children\":[null,[\"$\",\"$Lc\",null,{\"children\":\"$Ld\"}],[\"$\",\"div\",null,{\"hidden\":true,\"children\":[\"$\",\"$Le\",null,{\"children\":[\"$\",\"$a\",null,{\"name\":\"Next.Metadata\",\"children\":\"$Lf\"}]}]}],null]}],false]],\"m\":\"$undefined\",\"G\":[\"$10\",[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/14_iu9qtvm8pz.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}]]],\"S\":true,\"h\":null,\"s\":\"$undefined\",\"l\":\"$undefined\",\"p\":\"$undefined\",\"d\":\"$undefined\",\"b\":\"FWz3cQruc1PVOEFk0JAut\"}\n"])</script><script>self.__next_f.push([1,"d:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}]]\n"])</script><script>self.__next_f.push([1,"b:null\nf:[[\"$\",\"title\",\"0\",{\"children\":\"汪子川 | 舞台设计档案 | Zichuan Wang Stage Design Archive\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"汪子川 - 舞台设计师作品集档案。中央戏剧学院，专注于音乐剧、话剧、实景演出、儿童剧的舞台设计。\"}],[\"$\",\"meta\",\"2\",{\"name\":\"author\",\"content\":\"汪子川 Zichuan Wang\"}],[\"$\",\"meta\",\"3\",{\"name\":\"keywords\",\"content\":\"汪子川,舞台设计,作品集,中央戏剧学院,音乐剧,话剧,舞美设计,儿童剧,实景演出,Zichuan Wang,Portfolio,Stage Design,Set Design\"}],[\"$\",\"meta\",\"4\",{\"property\":\"og:title\",\"content\":\"汪子川 | 舞台设计档案\"}],[\"$\",\"meta\",\"5\",{\"property\":\"og:description\",\"content\":\"中央戏剧学院舞台设计师作品集档案\"}],[\"$\",\"meta\",\"6\",{\"property\":\"og:type\",\"content\":\"website\"}],[\"$\",\"meta\",\"7\",{\"name\":\"twitter:card\",\"content\":\"summary\"}],[\"$\",\"meta\",\"8\",{\"name\":\"twitter:title\",\"content\":\"汪子川 | 舞台设计档案\"}],[\"$\",\"meta\",\"9\",{\"name\":\"twitter:description\",\"content\":\"中央戏剧学院舞台设计师作品集档案\"}]]\n"])</script></body></html>
