@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汪子川 | 舞台设计作品集</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #e8e6e2;
+            --bg-warm: #f2f0ec;
+            --text: #1c1c1c;
+            --text-muted: #777;
+            --text-light: #aaa;
+        }
+
+        html, body {
+            font-family: 'Georgia', 'Noto Serif SC', serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========== LOADING ========== */
+        .loading {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease;
+        }
+        .loading.done { opacity: 0; pointer-events: none; }
+        .loading-text {
+            font-size: 10px;
+            letter-spacing: 0.8em;
+            color: var(--text-light);
+            font-family: sans-serif;
+            animation: breathe 2.5s ease-in-out infinite;
+        }
+        @keyframes breathe { 0%,100%{opacity:0.2} 50%{opacity:0.7} }
+
+        /* ========== HEADER ========== */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 24px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+        .site-header > * { pointer-events: auto; }
+
+        .logo {
+            font-size: 10px;
+            letter-spacing: 0.5em;
+            font-family: sans-serif;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .logo:hover { color: var(--text); }
+
+        .header-nav {
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(16px);
+            padding: 4px;
+            border-radius: 100px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .header-nav-btn {
+            padding: 8px 20px;
+            border-radius: 100px;
+            border: none;
+            background: transparent;
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            font-family: sans-serif;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+            white-space: nowrap;
+        }
+        .header-nav-btn:hover { color: var(--text); }
+        .header-nav-btn.active {
+            background: var(--text);
+            color: #fff;
+        }
+
+        .header-contact {
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            font-family: sans-serif;
+            color: var(--text-light);
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.3s;
+            padding-bottom: 2px;
+            position: relative;
+        }
+        .header-contact::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--text-muted);
+            transition: width 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+        .header-contact:hover { color: var(--text); }
+        .header-contact:hover::after { width: 100%; }
+
+        /* ========== 3D SCENE ========== */
+        .scene-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 40px 60px;
+            perspective: 2000px;
+            perspective-origin: 50% 45%;
+        }
+
+        .scene {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            height: 680px;
+            transform-style: preserve-3d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ========== 3D CARD ========== */
+        .scene-card {
+            position: absolute;
+            width: 340px;
+            height: 440px;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
+        }
+
+        .card-surface {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow:
+                0 4px 20px rgba(0,0,0,0.08),
+                0 1px 3px rgba(0,0,0,0.05);
+            transition: box-shadow 0.6s ease;
+        }
+
+        .scene-card:hover .card-surface {
+            box-shadow:
+                0 40px 80px -20px rgba(0,0,0,0.25),
+                0 20px 40px -10px rgba(0,0,0,0.15),
+                0 0 0 1px rgba(0,0,0,0.04);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 75%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.8s cubic-bezier(0.16,1,0.3,1), filter 0.5s ease;
+            filter: saturate(0.85) contrast(0.95);
+        }
+
+        .scene-card:hover .card-image {
+            transform: scale(1.05);
+            filter: saturate(1) contrast(1);
+        }
+
+        /* Card text area */
+        .card-text {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px 18px;
+            background: linear-gradient(to top, rgba(255,255,255,1) 70%, rgba(255,255,255,0.9) 100%);
+            z-index: 2;
+        }
+
+        .card-title-zh {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--text);
+            line-height: 1.3;
+            margin-bottom: 3px;
+        }
+
+        .card-title-en {
+            font-size: 9px;
+            font-family: sans-serif;
+            letter-spacing: 0.08em;
+            color: var(--text-light);
+            text-transform: uppercase;
+            line-height: 1.4;
+        }
+
+        .card-year {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            font-size: 9px;
+            font-family: sans-serif;
+            letter-spacing: 0.1em;
+            color: #fff;
+            background: rgba(0,0,0,0.35);
+            padding: 4px 10px;
+            border-radius: 100px;
+            backdrop-filter: blur(8px);
+            z-index: 3;
+        }
+
+        .card-tag {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            font-size: 8px;
+            font-family: sans-serif;
+            letter-spacing: 0.15em;
+            color: #fff;
+            background: rgba(0,0,0,0.3);
+            padding: 3px 8px;
+            border-radius: 100px;
+            backdrop-filter: blur(8px);
+            z-index: 3;
+            text-transform: uppercase;
+        }
+
+        /* Hover popup effect */
+        .scene-card:hover {
+            z-index: 100 !important;
+        }
+
+        /* ========== DETAIL PAGE ========== */
+        .detail-page {
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            background: #0a0a0a;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.7s ease;
+        }
+        .detail-page.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .detail-bg-layer {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transform: scale(1.08);
+            transition: opacity 1s ease, transform 10s linear;
+        }
+        .detail-bg-layer.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .detail-vignette {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 100%),
+                linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%);
+            z-index: 2;
+        }
+
+        .detail-back {
+            position: absolute;
+            top: 24px;
+            left: 28px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 100px;
+            color: rgba(255,255,255,0.5);
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            font-family: sans-serif;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+        .detail-back:hover {
+            color: #fff;
+            background: rgba(0,0,0,0.6);
+            border-color: rgba(255,255,255,0.15);
+        }
+        .detail-back svg { width: 14px; height: 14px; }
+
+        .detail-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 50;
+            width: 56px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.25);
+            transition: all 0.4s ease;
+            opacity: 0;
+        }
+        .detail-nav:hover { opacity: 1; color: rgba(255,255,255,0.8); }
+        .detail-nav.prev { left: 0; }
+        .detail-nav.next { right: 0; }
+
+        .detail-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 30;
+            padding: 48px 52px 40px;
+            color: #fff;
+            pointer-events: none;
+        }
+        .detail-content > * { pointer-events: auto; }
+
+        .detail-tag {
+            display: inline-block;
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            font-family: sans-serif;
+            text-transform: uppercase;
+            padding: 3px 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 100px;
+            margin-bottom: 10px;
+            color: rgba(255,255,255,0.45);
+        }
+
+        .detail-title-zh {
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: bold;
+            line-height: 1.05;
+            margin-bottom: 4px;
+            text-shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+
+        .detail-title-en {
+            font-size: 11px;
+            font-family: sans-serif;
+            letter-spacing: 0.15em;
+            color: rgba(255,255,255,0.35);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .detail-meta {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            font-family: sans-serif;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+        }
+        .detail-meta .divider { width: 14px; height: 1px; background: rgba(255,255,255,0.1); }
+
+        .detail-desc {
+            font-size: 13px;
+            line-height: 1.7;
+            color: rgba(255,255,255,0.55);
+            font-weight: 300;
+            font-style: italic;
+            max-width: 480px;
+            margin-bottom: 24px;
+        }
+
+        .detail-thumbs {
+            display: flex;
+            gap: 8px;
+        }
+        .detail-thumb {
+            width: 52px;
+            height: 38px;
+            border-radius: 4px;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            opacity: 0.35;
+            transition: all 0.4s ease;
+            border: 1.5px solid transparent;
+        }
+        .detail-thumb:hover { opacity: 0.7; }
+        .detail-thumb.active {
+            opacity: 1;
+            border-color: rgba(255,255,255,0.4);
+            transform: scale(1.1);
+        }
+
+        .detail-counter {
+            margin-left: auto;
+            font-size: 11px;
+            font-family: sans-serif;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 0.1em;
+            align-self: center;
+        }
+        .detail-counter .cur { color: rgba(255,255,255,0.8); font-weight: 500; }
+
+        /* ========== CONTACT ========== */
+        .contact-page {
+            position: fixed;
+            inset: 0;
+            z-index: 6000;
+            background: var(--bg);
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            align-items: center;
+            justify-content: center;
+        }
+        .contact-page.active { display: flex; opacity: 1; }
+
+        .contact-close {
+            position: absolute;
+            top: 24px;
+            right: 36px;
+            background: none;
+            border: none;
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            font-family: sans-serif;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .contact-close:hover { color: var(--text); }
+
+        .contact-box {
+            text-align: center;
+        }
+        .contact-box h2 {
+            font-size: clamp(32px, 4vw, 48px);
+            font-style: italic;
+            margin-bottom: 64px;
+            color: var(--text);
+        }
+        .contact-row { margin-bottom: 40px; }
+        .contact-row-label {
+            font-size: 9px;
+            letter-spacing: 0.4em;
+            color: var(--text-light);
+            font-family: sans-serif;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .contact-row-value {
+            font-size: clamp(18px, 2.5vw, 24px);
+            color: var(--text);
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .contact-row-value:hover { opacity: 0.5; }
+        .contact-sep {
+            width: 36px;
+            height: 1px;
+            background: rgba(0,0,0,0.1);
+            margin: 28px auto;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: sans-serif;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+            pointer-events: none;
+            z-index: 10000;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Mobile */
+        @media (max-width: 900px) {
+            .scene { height: 500px; }
+            .scene-card { width: 240px; height: 320px; }
+            .site-header { padding: 16px 20px; }
+            .header-nav { gap: 2px; }
+            .header-nav-btn { padding: 6px 12px; font-size: 9px; }
+            .detail-content { padding: 24px; }
+            .detail-nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loading" id="loading">
+        <div class="loading-text">LOADING</div>
+    </div>
+    <div class="toast" id="toast">已复制到剪贴板</div>
+
+    <!-- ===== GALLERY ===== -->
+    <div id="galleryView">
+        <header class="site-header">
+            <a class="logo" href="#">ZICHUAN WANG</a>
+            <nav class="header-nav">
+                <button class="header-nav-btn active" id="btn-main" onclick="filterProjects('main')">主要设计</button>
+                <button class="header-nav-btn" id="btn-assistant" onclick="filterProjects('assistant')">助理及案头作业</button>
+            </nav>
+            <button class="header-contact" onclick="showContact()">CONTACT</button>
+        </header>
+
+        <div class="scene-container">
+            <div class="scene" id="scene"></div>
+        </div>
+    </div>
+
+    <!-- ===== DETAIL ===== -->
+    <div class="detail-page" id="detailPage">
+        <div id="detailBgs"></div>
+        <div class="detail-vignette"></div>
+
+        <button class="detail-back" onclick="closeDetail()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            返回
+        </button>
+
+        <button class="detail-nav prev" onclick="detailPrevImg()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <button class="detail-nav next" onclick="detailNextImg()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+
+        <div class="detail-content">
+            <div class="detail-tag" id="dTag">主要设计</div>
+            <div class="detail-title-zh" id="dTitleZh">缘·白蛇</div>
+            <div class="detail-title-en" id="dTitleEn">WHITE SNAKE</div>
+            <div class="detail-meta">
+                <span id="dLoc">中央戏剧学院剧场</span>
+                <span class="divider"></span>
+                <span id="dYear">2025</span>
+            </div>
+            <p class="detail-desc" id="dDesc">...</p>
+            <div style="display:flex;align-items:center;gap:16px;">
+                <div class="detail-thumbs" id="dThumbs"></div>
+                <div class="detail-counter">
+                    <span class="cur" id="dCur">1</span> / <span id="dTotal">3</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CONTACT ===== -->
+    <div class="contact-page" id="contactPage">
+        <button class="contact-close" onclick="hideContact()">CLOSE</button>
+        <div class="contact-box">
+            <h2>Collaboration.</h2>
+            <div class="contact-row">
+                <div class="contact-row-label">WeChat ID (Click to Copy)</div>
+                <div class="contact-row-value" onclick="copyWechat()">wzc20010318</div>
+            </div>
+            <div class="contact-sep"></div>
+            <div class="contact-row">
+                <div class="contact-row-label">E-Mail Address</div>
+                <a href="mailto:zichuan25@gmail.com" class="contact-row-value">zichuan25@gmail.com</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DATA =====
+        const mainProjects = [
+            { id:"白蛇", title:"缘·白蛇", titleEn:"WHITE SNAKE", year:"2025", location:"中央戏剧学院剧场", tag:"主要设计", desc:"为音乐剧《缘·白蛇》设计的舞台。以'极致留白'与'枯枝'为核心，重构传统白蛇传。利用极简的视觉语言，在古典韵味中寻找当代东方美学的呼吸感。", images:["images/2.jpg","images/3.jpg","images/4.jpg"] },
+            { id:"琴弦", title:"命若琴弦", titleEn:"FATE LIKE A STRING", year:"2025", location:"实验剧场 / 史铁生原作", tag:"主要设计", desc:"探讨生命的虚无与坚韧。提取粗犷的岩石肌理，通过倾斜的步道与压抑的层高，将史铁生笔下苍凉而壮阔的生命哲思具象化。", images:["images/5.jpg","images/6.jpg","images/7.jpg"] },
+            { id:"无影25", title:"无影 2025", titleEn:"NO SHADOW 2025", year:"2025", location:"溶洞实景演出", tag:"主要设计", desc:"实景舞美实践。利用天然溶洞地貌，构建出一种'人工造景'与'自然进化'的跨时空对话，探索环境戏剧在极致条件下的可能性。", images:["images/8.jpg","images/9.jpg"] },
+            { id:"无影26", title:"无影 2026 桂林艺术节版", titleEn:"NO SHADOW 2026 GUILIN", year:"2026", location:"桂林艺术节 / 溶洞实景", tag:"主要设计", desc:"《无影》桂林艺术节特别版本。在原有实景基础上重新编排视觉节奏，融入更多在地文化元素，呈现更具当代性的环境戏剧表达。", images:["images/10.jpg","images/11.jpg"] },
+            { id:"梅边", title:"梅边梦柳", titleEn:"DREAMING OF WILLOW", year:"2025", location:"实验剧场", tag:"主要设计", desc:"以古典戏曲意象为灵感，构建一个介于真实与虚幻之间的诗意空间。梅与柳的交织，象征着记忆与梦境的缠绵。", images:["images/12.jpg"] },
+            { id:"悟空", title:"悟空", titleEn:"WUKONG", year:"2025", location:"神话新编剧场", tag:"主要设计", desc:"以当代视角重构孙悟空神话。舞台以极具张力的视觉符号，表现悟空从顽石到斗战胜佛的精神蜕变。", images:["images/13.jpg"] },
+            { id:"即刻", title:"即刻感受", titleEn:"FEEL IT NOW", year:"2024", location:"当代舞蹈剧场", tag:"主要设计", desc:"以身体感知为核心的当代舞台实验。通过光影与几何结构的交织，营造沉浸式的感官体验空间。", images:["images/16.jpg"] },
+            { id:"笨狼", title:"笨狼的故事", titleEn:"THE TALE OF THE SILLY WOLF", year:"2023", location:"儿童剧系列", tag:"主要设计", desc:"为儿童剧系列打造的奇幻舞台世界。以温暖的色调与夸张的比例，构建一个充满想象力与童趣的叙事空间。", images:["images/17.jpg","images/18.jpg"] },
+            { id:"温柔", title:"温柔的体贴的", titleEn:"GENTLE AND CONSIDERATE", year:"2025", location:"绘本改编儿童剧", tag:"主要设计", desc:"绘本改编儿童剧舞台设计。以橙色山丘与云朵装饰营造童话氛围，温暖而充满想象力的视觉语言。", images:["images/22.jpg"] },
+            { id:"信任", title:"信任的力量", titleEn:"THE POWER OF TRUST", year:"2025", location:"儿童剧", tag:"主要设计", desc:"以蓝色灯光与抽象几何布景构建的现代舞台。探讨信任与成长的故事，温暖而富有启发性。", images:["images/23.jpg"] },
+            { id:"教师", title:"教师节晚会", titleEn:"TEACHER'S DAY GALA", year:"2024", location:"校园庆典活动", tag:"主要设计", desc:"教师节庆祝活动舞台设计。以庄重而温馨的视觉语言，营造感恩与敬意的庆典氛围。", images:["images/24.jpg"] }
+        ];
+
+        const assistantProjects = [
+            { id:"40天", title:"40天", titleEn:"40 DAYS", year:"2024", location:"设计助理", tag:"助理工作", desc:"担任设计助理参与的舞台项目。在团队协作中学习大型演出的舞美制作流程。", images:["images/14.jpg"] },
+            { id:"潮汐", title:"潮汐图", titleEn:"TIDE CHART", year:"2024", location:"设计助理", tag:"助理工作", desc:"担任设计助理。参与海洋意象舞台的视觉呈现，探索水流与空间的动态关系。", images:["images/15.jpg"] },
+            { id:"戈多", title:"等待戈多", titleEn:"WAITING FOR GODOT", year:"2024", location:"设计助理 / 贝克特经典", tag:"助理工作", desc:"作为设计助理参与的《等待戈多》舞台设计。在荒诞与虚无的基调中，协助构建时间的停滞感。", images:["images/19.jpg","images/20.jpg"] },
+            { id:"原野", title:"原野", titleEn:"WILDERNESS", year:"2024", location:"设计助理 / 曹禺原作", tag:"助理工作", desc:"担任设计助理参与的《原野》舞台设计。协助营造压抑而悲壮的乡土戏剧空间。", images:["images/28.jpg","images/29.jpg"] },
+            { id:"折子", title:"折子戏", titleEn:"EXCERPTS", year:"2024", location:"设计助理", tag:"助理工作", desc:"担任设计助理参与的折子戏系列演出。在传统戏曲舞台上协助当代视觉语言的融入。", images:["images/30.jpg"] }
+        ];
+
+        const deskProjects = [
+            { id:"李尔", title:"李尔王", titleEn:"KING LEAR", year:"2024", location:"案头作业 / 莎剧练习", tag:"案头作业", desc:"权力的崩塌与荒野的咆哮。通过对'暴风雨'后废墟质感的提取，表现李尔王在疯癫与觉醒之间的混沌精神状态。", images:["images/31.jpg","images/32.jpg","images/36.jpg"] },
+            { id:"天宫", title:"闹天宫", titleEn:"HAVOC IN HEAVEN", year:"2024", location:"案头作业 / 京剧", tag:"案头作业", desc:"京剧《闹天宫》舞台设计练习。提取传统戏曲的视觉符号，探索神话场面的当代舞台表达。", images:["images/33.jpg"] },
+            { id:"天边", title:"天边外", titleEn:"BEYOND THE HORIZON", year:"2024", location:"案头作业 / 尤金·奥尼尔", tag:"案头作业", desc:"尤金·奥尼尔经典剧作舞台设计练习。以诗意的空间语言，呈现理想与现实之间的永恒张力。", images:["images/34.jpg"] },
+            { id:"祥子", title:"骆驼祥子", titleEn:"RICKSHAW BOY", year:"2024", location:"案头作业 / 环境式戏剧", tag:"案头作业", desc:"环境式戏剧《骆驼祥子》设计练习。打破传统镜框舞台限制，以沉浸式空间重构老舍笔下的北平。", images:["images/35.jpg"] }
+        ];
+
+        let currentFilter = 'main';
+        let detailProject = null;
+        let detailImgIdx = 0;
+
+        function getProjects() {
+            if (currentFilter === 'main') return mainProjects;
+            return [...assistantProjects, ...deskProjects];
+        }
+
+        // ===== RENDER 3D SCENE =====
+        function renderScene() {
+            const scene = document.getElementById('scene');
+            scene.innerHTML = '';
+            const projects = getProjects();
+
+            // Calculate arc arrangement
+            const count = projects.length;
+            const arcSpan = Math.min(count * 18, 140); // degrees
+            const startAngle = -arcSpan / 2;
+
+            projects.forEach((proj, i) => {
+                const card = document.createElement('div');
+                card.className = 'scene-card';
+
+                // Arc position
+                const angle = startAngle + (i / (count - 1 || 1)) * arcSpan;
+                const radius = 280;
+                const rad = angle * Math.PI / 180;
+                const x = Math.sin(rad) * radius;
+                const z = Math.cos(rad) * radius - radius;
+                const rotY = -angle * 0.6;
+                const rotX = 5 + Math.sin(i * 0.7) * 3;
+
+                card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${rotY}deg) rotateX(${rotX}deg)`;
+                card.style.zIndex = Math.round(z + 500);
+
+                card.innerHTML = `
+                    <div class="card-surface">
+                        <div class="card-tag">${proj.tag}</div>
+                        <div class="card-year">${proj.year}</div>
+                        <img class="card-image" src="${proj.images[0]}" alt="${proj.title}" loading="lazy">
+                        <div class="card-text">
+                            <div class="card-title-zh">${proj.title}</div>
+                            <div class="card-title-en">${proj.titleEn}</div>
+                        </div>
+                    </div>
+                `;
+
+                // Hover: pop forward and straighten
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = `translateX(${x}px) translateZ(${z + 120}px) rotateY(0deg) rotateX(0deg) scale(1.08)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${rotY}deg) rotateX(${rotX}deg)`;
+                });
+                card.addEventListener('click', () => openDetail(proj));
+
+                scene.appendChild(card);
+            });
+        }
+
+        function filterProjects(type) {
+            currentFilter = type;
+            document.getElementById('btn-main').classList.toggle('active', type === 'main');
+            document.getElementById('btn-assistant').classList.toggle('active', type === 'assistant');
+            renderScene();
+        }
+
+        // ===== DETAIL =====
+        function openDetail(project) {
+            detailProject = project;
+            detailImgIdx = 0;
+
+            document.getElementById('dTag').textContent = project.tag;
+            document.getElementById('dTitleZh').textContent = project.title;
+            document.getElementById('dTitleEn').textContent = project.titleEn;
+            document.getElementById('dLoc').textContent = project.location;
+            document.getElementById('dYear').textContent = project.year;
+            document.getElementById('dDesc').textContent = project.desc;
+
+            // Backgrounds
+            const bgContainer = document.getElementById('detailBgs');
+            bgContainer.innerHTML = '';
+            project.images.forEach((img, i) => {
+                const div = document.createElement('div');
+                div.className = 'detail-bg-layer' + (i === 0 ? ' active' : '');
+                div.style.backgroundImage = `url(${img})`;
+                div.dataset.index = i;
+                bgContainer.appendChild(div);
+            });
+
+            // Thumbs
+            const thumbs = document.getElementById('dThumbs');
+            thumbs.innerHTML = '';
+            project.images.forEach((img, i) => {
+                const t = document.createElement('div');
+                t.className = 'detail-thumb' + (i === 0 ? ' active' : '');
+                t.style.backgroundImage = `url(${img})`;
+                t.onclick = () => setDetailImg(i);
+                thumbs.appendChild(t);
+            });
+
+            document.getElementById('dTotal').textContent = project.images.length;
+            document.getElementById('dCur').textContent = '1';
+
+            document.getElementById('detailPage').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDetail() {
+            document.getElementById('detailPage').classList.remove('active');
+            document.body.style.overflow = '';
+            detailProject = null;
+        }
+
+        function setDetailImg(idx) {
+            if (!detailProject || idx === detailImgIdx) return;
+            detailImgIdx = idx;
+            document.querySelectorAll('.detail-bg-layer').forEach((el, i) => {
+                el.classList.toggle('active', i === idx);
+            });
+            document.querySelectorAll('.detail-thumb').forEach((el, i) => {
+                el.classList.toggle('active', i === idx);
+            });
+            document.getElementById('dCur').textContent = idx + 1;
+        }
+
+        function detailNextImg() {
+            if (!detailProject) return;
+            setDetailImg((detailImgIdx + 1) % detailProject.images.length);
+        }
+        function detailPrevImg() {
+            if (!detailProject) return;
+            setDetailImg((detailImgIdx - 1 + detailProject.images.length) % detailProject.images.length);
+        }
+
+        // ===== CONTACT =====
+        function showContact() { document.getElementById('contactPage').classList.add('active'); }
+        function hideContact() { document.getElementById('contactPage').classList.remove('active'); }
+
+        function copyWechat() {
+            navigator.clipboard.writeText('wzc20010318').then(() => {
+                const t = document.getElementById('toast');
+                t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 2000);
+            });
+        }
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('detailPage').classList.contains('active')) {
+                if (e.key === 'Escape') closeDetail();
+                if (e.key === 'ArrowRight') detailNextImg();
+                if (e.key === 'ArrowLeft') detailPrevImg();
+            }
+            if (document.getElementById('contactPage').classList.contains('active')) {
+                if (e.key === 'Escape') hideContact();
+            }
+        });
+
+        // Init
+        window.addEventListener('load', () => {
+            renderScene();
+            setTimeout(() => document.getElementById('loading').classList.add('done'), 800);
+        });
+
+        // Mouse parallax on scene
+        document.addEventListener('mousemove', (e) => {
+            const scene = document.getElementById('scene');
+            if (!scene) return;
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            const dx = (e.clientX - cx) / cx;
+            const dy = (e.clientY - cy) / cy;
+            scene.style.transform = `rotateY(${dx * 3}deg) rotateX(${-dy * 2}deg)`;
+        });
+    </script>
+</body>
+</html>
